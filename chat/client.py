@@ -21,6 +21,12 @@ class Client(Thread):
         self.sock.setblocking(1)
         self.sock.connect((host, port))
 
+    def start(self, callback):
+        while True:
+            msg = self.recv()
+            if msg is not None:
+                callback(msg)
+
     def __recv_fixed_length(self, LENGTH):
         try:
             msg = ''
