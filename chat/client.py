@@ -21,22 +21,15 @@ class Client(Thread):
         self.sock.setblocking(1)
         self.sock.connect((host, port))
 
-    def run(self):
-        while True:
-            msg = self.recv()
-            if msg is not None:
-                print
-                print msg
-                print
-
     def __recv_fixed_length(self, LENGTH):
         try:
-            msg = u''
+            msg = ''
             while len(msg) < LENGTH:
                 chunk = self.sock.recv(LENGTH - len(msg))
                 if len(chunk) < 1 or chunk == '':
                     raise RuntimeError()
-                msg += chunk.decode(u'utf8')
+                msg += chunk
+            msg.decode(u'utf8')
 
         except socket.error:
             msg = None
@@ -61,4 +54,5 @@ class Client(Thread):
 
     def send(self, msg):
         fmt = u'%%0%dd%%s' % (MSG_LEN_CHUNK_LENGTH, )
+        msg = msg.encode(u'utf8')
         self.sock.sendall(fmt % (len(msg), msg))
