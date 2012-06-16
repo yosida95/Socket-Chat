@@ -1,7 +1,6 @@
 #-*- coding: utf-8 -*-
 
 import curses
-import curses.textpad
 import argparse
 from chat.client import Client
 from threading import Thread
@@ -12,8 +11,11 @@ locale.setlocale(locale.LC_ALL, "")
 
 class CursesClient:
 
-    def __init__(self, client):
+    def __init__(self, client, name):
         self.client = client
+        self.name = name
+
+        self.client.send(u'system: %s has joined' % (self.name, ))
 
         self.screen = curses.initscr()
         curses.noecho()
@@ -32,11 +34,11 @@ class CursesClient:
         lines = []
 
         def callback(msg):
-            lines.insert(0, msg)
+            lines.append(msg)
 
             self.conv_window.erase()
             height, width = self.conv_window.getmaxyx()
-            for y, msg in enumerate(lines[0:height]):
+            for y, msg in enumerate(lines[len(lines) - height:len(lines)]):
                 self.conv_window.addstr(y, 0, msg)
             self.conv_window.refresh()
 
@@ -54,10 +56,11 @@ class CursesClient:
 
         while True:
             self.input_window.erase()
-            input_box = curses.textpad.Textbox(self.input_window)
-            msg = input_box.edit()
+            curses.echo()
+            msg = self.input_window.getstr()
+            curses.noecho()
             if len(msg) > 0:
-                self.client.send(msg)
+                self.client.send(u'%s: %s' % (self.name, msg))
 
     def stop(self):
         curses.nocbreak()
@@ -85,7 +88,7 @@ def main():
     args = getargs()
 
     client = Client(host=args.host, port=args.port)
-    curses_client = CursesClient(client)
+    curses_client = CursesClient(client, name=args.name)
 
     try:
         curses_client.start()
