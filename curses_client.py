@@ -1,7 +1,6 @@
 #-*- coding: utf-8 -*-
 
 import curses
-import argparse
 from chat.client import Client
 from threading import Thread
 
@@ -73,15 +72,31 @@ class CursesClient:
 
 
 def getargs():
-    parser = argparse.ArgumentParser(u'Socket Chat Client')
-    parser.add_argument(u'--host', type=str, required=True,
-                        help=u'Host of server')
-    parser.add_argument(u'--port', type=int, required=True,
-                        help=u'Host of server')
-    parser.add_argument(u'--name', type=str, required=True,
-                        help=u'Your name.')
+    try:
+        import argparse
+        parser = argparse.ArgumentParser(u'Socket Chat Client')
+        parser.add_argument(u'--host', type=str, required=True,
+                            help=u'Host of server')
+        parser.add_argument(u'--port', type=int, required=True,
+                            help=u'Host of server')
+        parser.add_argument(u'--name', type=str, required=True,
+                            help=u'Your name.')
 
-    return parser.parse_args()
+    except ImportError:
+        import optparse
+        parser = optparse.OptionParser(u'Socket Chat Client')
+        parser.add_option('--host', type='string',
+                          help=u'Host of server')
+        parser.add_option('--port', type=u'int',
+                          help=u'Host of server')
+        parser.add_option('--name', type=u'string',
+                          help=u'Your name.')
+
+        args = parser.parse_args()[0]
+    else:
+        args = parser.parse_args()
+    finally:
+        return args
 
 
 def main():
