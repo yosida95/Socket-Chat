@@ -95,12 +95,13 @@ class ClientThread(Thread):
 
     def __recv_fixed_length(self, LENGTH):
         try:
-            msg = u''
+            msg = ''
             while len(msg) < LENGTH:
                 chunk = self.sock.recv(LENGTH - len(msg))
                 if len(chunk) < 1 or chunk == '':
                     raise self.ClientLeft()
-                msg += chunk.decode(u'utf8')
+                msg += chunk
+            msg = msg.decode(u'utf8')
 
         except socket.error:
             msg = None
@@ -128,7 +129,8 @@ class ClientThread(Thread):
             raise Exception()
 
         fmt = u'%%0%dd%%s' % (MSG_LEN_CHUNK_LENGTH, )
-        self.sock.sendall((fmt % (len(msg), msg)).encode(u'utf8'))
+        msg = msg.encode(u'utf8')
+        self.sock.sendall(fmt % (len(msg), msg))
 
 
 class Server(object):
@@ -150,4 +152,4 @@ class Server(object):
             (client, address) = self.sock.accept()
             client_thread = ClientThread(client, msg_q)
             client_thread.start()
-            logging.info('%s:%d has joined' % address)
+            logging.info(u'%s:%d has joined' % address)
