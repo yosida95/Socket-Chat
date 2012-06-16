@@ -93,10 +93,12 @@ def getargs():
                           help=u'Your name.')
 
         args = parser.parse_args()[0]
+        if not (args.host and args.port and args.name):
+            return parser.error(u'--host, --port, and --name are required')
     else:
         args = parser.parse_args()
-    finally:
-        return args
+
+    return args
 
 
 def main():
